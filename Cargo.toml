@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "shared",
+    "back-office",
+    "front-office",
+    "portal"
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
