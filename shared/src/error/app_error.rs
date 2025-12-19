@@ -1,30 +1,30 @@
+use crate::error::app_error::AppError::DatabaseError;
 use actix_web::body::BoxBody;
 use actix_web::http::StatusCode;
-use actix_web::{HttpResponse, ResponseError};
 use actix_web::http::header::ContentType;
-use derive_more::derive::{Display, Error};
+use actix_web::{HttpResponse, ResponseError};
+use derive_more::derive::Display;
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
 use serde::Serialize;
-use crate::error::app_error::AppError::DatabaseError;
 
 #[derive(Debug, Display)]
 pub enum AppError {
-    #[display("Database error: {}", _0)]
+    #[display("Өгөгдлийн сангийн алдаа: {}", _0)]
     DatabaseError(String),
 
-    #[display("Not found: {}", _0)]
+    #[display("Олдсонгүй: {}", _0)]
     NotFound(String),
 
-    #[display("Validation error: {}", _0)]
+    #[display("Баталгаажуулалтын алдаа: {}", _0)]
     ValidationError(String),
 
-    #[display("Unauthorized: {}", _0)]
+    #[display("Зөвшөөрөлгүй: {}", _0)]
     Unauthorized(String),
 
-    #[display("Bad request: {}", _0)]
+    #[display("Буруу хүсэлт: {}", _0)]
     BadRequest(String),
 
-    #[display("Internal server error: {}", _0)]
+    #[display("Дотоод серверийн алдаа: {}", _0)]
     InternalError(String),
 }
 
@@ -57,7 +57,8 @@ impl ResponseError for AppError {
                 AppError::Unauthorized(_) => "UNAUTHORIZED",
                 AppError::BadRequest(_) => "BAD_REQUEST",
                 AppError::InternalError(_) => "INTERNAL_ERROR",
-            }.to_string(),
+            }
+            .to_string(),
             message: self.to_string(),
             status: status.as_u16(),
         };
@@ -72,15 +73,13 @@ impl ResponseError for AppError {
 impl From<DieselError> for AppError {
     fn from(err: DieselError) -> Self {
         match err {
-            DieselError::NotFound => {
-                AppError::NotFound("Resource not found".to_string())
-            }
-            DieselError::DatabaseError(kind, info) => {
-                match kind   { 
-                    DatabaseErrorKind::UniqueViolation => DatabaseError("ZAOIL".to_string()),
-                    _ => DatabaseError("Internal server error".to_string())
+            DieselError::NotFound => AppError::NotFound("Resource not found".to_string()),
+            DieselError::DatabaseError(kind, _info) => match kind {
+                DatabaseErrorKind::UniqueViolation => {
+                    DatabaseError("Энэ утга аль хэдийн бүртгэгдсэн байна".to_string())
                 }
-            }
+                _ => DatabaseError("Internal server error".to_string()),
+            },
             _ => AppError::DatabaseError(err.to_string()),
         }
     }

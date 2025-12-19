@@ -7,7 +7,9 @@ use crate::config::database::DataBaseConfig;
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
 pub type DbConnection = PooledConnection<ConnectionManager<PgConnection>>;
 
-pub fn create_pool(config: &DataBaseConfig) -> DbPool {
+pub fn create_pool() -> DbPool {
+    dotenv::dotenv().ok();
+    let config = DataBaseConfig::from_env();
     let manager = ConnectionManager::<PgConnection>::new(&config.url);
 
     Pool::builder()
